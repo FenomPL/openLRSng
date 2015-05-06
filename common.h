@@ -34,7 +34,7 @@ uint32_t getInterval(struct bind_data *bd)
   ret = (BYTES_AT_BAUD_TO_USEC(getPacketSize(bd), modem_params[bd->modem_params].bps) + 2000);
 
   if (bd->flags & TELEMETRY_MASK) {
-    ret += (BYTES_AT_BAUD_TO_USEC(TELEMETRY_PACKETSIZE, modem_params[bd->modem_params].bps) + 1000);
+    ret += (BYTES_AT_BAUD_TO_USEC(bd->serial_downlink, modem_params[bd->modem_params].bps) + 1000);
   }
 
   // round up to ms
@@ -82,13 +82,13 @@ void packChannels(uint8_t config, volatile uint16_t PPM[], uint8_t *p)
 void unpackChannels(uint8_t config, volatile uint16_t PPM[], uint8_t *p)
 {
   uint8_t i;
-  for (i=0; i<=(config/2); i++) { // 4ch packed in 5 bytes
+  for (i = 0; i <= (config / 2); i++) { // 4ch packed in 5 bytes
     PPM[0] = (((uint16_t)p[4] & 0x03) << 8) + p[0];
     PPM[1] = (((uint16_t)p[4] & 0x0c) << 6) + p[1];
     PPM[2] = (((uint16_t)p[4] & 0x30) << 4) + p[2];
     PPM[3] = (((uint16_t)p[4] & 0xc0) << 2) + p[3];
-    p+=5;
-    PPM+=4;
+    p += 5;
+    PPM += 4;
   }
   if (config & 1) { // 4ch packed in 1 byte;
     PPM[0] = (((uint16_t)p[0] >> 6) & 3) * 333 + 12;
@@ -152,7 +152,7 @@ uint8_t countSetBits(uint16_t x)
 void fatalBlink(uint8_t blinks)
 {
   while (1) {
-    for (uint8_t i=0; i < blinks; i++) {
+    for (uint8_t i = 0; i < blinks; i++) {
       Red_LED_ON;
       delay(100);
       Red_LED_OFF;
@@ -654,7 +654,7 @@ void beacon_send(void)
 
   spiWriteRegister(0x6d, 0x05);   // 5 set mid power 25mW
   delay(10);
-  beacon_tone(440,1);
+  beacon_tone(440, 1);
 
   spiWriteRegister(0x6d, 0x04);   // 4 set mid power 13mW
   delay(10);
@@ -662,7 +662,7 @@ void beacon_send(void)
 
   spiWriteRegister(0x6d, 0x02);   // 2 set min power 3mW
   delay(10);
-  beacon_tone(175,1);
+  beacon_tone(175, 1);
 
   spiWriteRegister(0x6d, 0x00);   // 0 set min power 1.3mW
   delay(10);

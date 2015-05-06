@@ -44,7 +44,7 @@
 
 //####### COMPILATION TARGET #######
 // Enable to compile transmitter code, default is RX
-//#define COMPILE_TX
+#define COMPILE_TX
 
 //####### TX BOARD TYPE #######
 // 0 = Flytron OpenLRS M1 Tx Board (not verified)
@@ -54,20 +54,46 @@
 // 4 = OpenLRSngTX / HawkEye UHF TX
 // 5 = OpenLRSngRX-4ch (DTF UHF) as TX
 // 6 = DTF UHF DeluxeTX (Atmega32u4)
-//#define BOARD_TYPE 6
+#ifdef COMPILE_TX
+	#define BOARD_TYPE 3
+#endif
 
 //####### RX BOARD TYPE #######
 // 3 = Flytron OpenLRS Rx v2 / OrangeRx UHF RX / HawkEye UHF RX
 // 5 = OpenLRSngRX-4ch (DTF UHF)
-//#define BOARD_TYPE 3
+#ifndef COMPILE_TX
+	#define BOARD_TYPE 3
+#endif
+
+#define REVERSE_PPM_RSSI_SERVO 1
+
 
 //### Module type selection (only for modified HW)
 //#define RFMXX_868
 //#define RFMXX_915
 
+
+//####### MAVLink #######
+#define MAVLINK_INJECT 1
+#define MAVLINK_INJECT_INTERVAL 100000
+
+#ifdef COMPILE_TX
+#define SERIAL_RX_BUFFERSIZE 128
+#define SERIAL_TX_BUFFERSIZE 64
+#else // COMPILE_RX
+#define SERIAL_RX_BUFFERSIZE 256
+#define SERIAL_TX_BUFFERSIZE 64
+#endif
+
+
 //####################
 //### CODE SECTION ###
 //####################
+
+#include <FastSerial.h>
+#include <BetterStream.h>
+#include <AP_Common.h>
+#include <AP_Math.h>
 
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -76,6 +102,10 @@
 #include "hardware.h"
 #include "binding.h"
 #include "common.h"
+
+#include <mavlink.h>
+#include <mavlinkframedetector.h>
+
 
 #ifdef COMPILE_TX
 #include "binary_com.h"

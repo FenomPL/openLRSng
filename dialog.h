@@ -20,15 +20,15 @@ uint16_t rxcVersion;
 
 void hexDump(void *in, uint16_t bytes)
 {
-  uint16_t check=0;
+  uint16_t check = 0;
   uint8_t  *p = (uint8_t*)in;
   Serial.print("@S:");
   Serial.print(bytes);
   if (bytes) {
     Serial.print("H:");
     while (bytes) {
-      Serial.print(hexTab[*(p)>>4]);
-      Serial.print(hexTab[*(p)&15]);
+      Serial.print(hexTab[*(p) >> 4]);
+      Serial.print(hexTab[*(p) & 15]);
       Serial.print(',');
       check = ((check << 1) + ((check & 0x8000) ? 1 : 0));
       check ^= *p;
@@ -37,7 +37,7 @@ void hexDump(void *in, uint16_t bytes)
     }
   }
   Serial.print("T:");
-  Serial.print(check,16);
+  Serial.print(check, 16);
   Serial.println(":");
 }
 
@@ -52,7 +52,7 @@ void hexGet(void *out, uint16_t expected)
   char     ch;
   while ((millis() - start) < 2000) {
     if (Serial.available()) {
-      ch=Serial.read();
+      ch = Serial.read();
       switch (state) {
       case 0: // wait for S
         if (ch == 'S') {
@@ -171,7 +171,7 @@ void bindPrint(void)
     Serial.println(F("Disabled"));
     break;
   case TELEMETRY_PASSTHRU:
-    Serial.println(F("Transparent"));
+    Serial.println(F("Transparent (Mavlink)"));
     break;
   case TELEMETRY_FRSKY:
     Serial.println(F("FrSky"));
@@ -192,6 +192,9 @@ void bindPrint(void)
 
   Serial.print(F("B) Micro (half) PPM    :"));
   Serial.println((bind_data.flags & MICROPPM) ? "Yes" : "No");
+
+  Serial.print(F("D) Telemetry packet size: "));
+  Serial.println(bind_data.serial_downlink);
 
   Serial.print(F("Calculated packet interval: "));
   Serial.print(getInterval(&bind_data));
@@ -313,6 +316,9 @@ void CLI_menu_headers(void)
     break;
   case 9:
     Serial.println(F("Set serial baudrate: "));
+    break;
+  case 11:
+    Serial.println(F("Set telemetry packet size: "));
     break;
   }
 
@@ -468,7 +474,7 @@ void handleRXmenu(char c)
           tx_buf[i + 1] = spiReadData();
         }
         memcpy(&rx_config, tx_buf + 1, sizeof(rx_config));
-        if (tx_buf[0]=='I') {
+        if (tx_buf[0] == 'I') {
           Serial.println(F("*****************************"));
           Serial.println(F("RX Acked - revert successful!"));
           Serial.println(F("*****************************"));
@@ -614,7 +620,7 @@ void handleRXmenu(char c)
             rx_config.pinMapping[CLI_menu - 1] = value - 1;
             valid_input = 1;
           } else {
-            ch=20;
+            ch = 20;
             for (uint8_t i = 0; i < rxcSpecialPinCount; i++) {
               if (rxcSpecialPins[i].output != (CLI_menu - 1)) {
                 continue;
@@ -649,7 +655,7 @@ void handleRXmenu(char c)
           if ((CLI_buffer[0] | 0x20) == 'p') {
             value = strtoul(CLI_buffer + 1, NULL, 0);
             if ((value >= 1) && (value <= 8)) {
-              value=EU_PMR_CH(value);
+              value = EU_PMR_CH(value);
             } else {
               value = 1; //invalid
             }
@@ -892,6 +898,11 @@ void handleCLImenu(char c)
       CLI_menu = -1;
       CLI_menu_headers();
       break;
+    case 'd':
+    case 'D':
+      CLI_menu = 11;
+      CLI_menu_headers();
+      break;
     case 'z':
     case 'Z':
       CLI_RX_config();
@@ -962,6 +973,12 @@ void handleCLImenu(char c)
         case 9:
           if ((value >= 1200) && (value <= 115200)) {
             bind_data.serial_baudrate = value;
+            valid_input = 1;
+          }
+          break;
+        case 11:
+          if ((value >= 1) && (value <= 63)) {
+            bind_data.serial_downlink = value;
             valid_input = 1;
           }
           break;
