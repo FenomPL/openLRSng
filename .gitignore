@@ -9,5 +9,12 @@
 *.elf
 *.o
 *.hex
+Debug/*
+Release/*
 libraries/*
+.settings/*
 out
+Release/
+.cproject
+.project
+openLRSng.cpp
