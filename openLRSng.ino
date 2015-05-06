@@ -45,13 +45,13 @@
 //####### COMPILATION TARGET #######
 // Enable to compile transmitter code, default is RX (remove leading //)
 //#define COMPILE_TX 0 // compile RX code
-//#define COMPILE_TX 1 // compile TX code
+#define COMPILE_TX 1 // compile TX code
 
 //####### TX BOARD TYPE #######
 // Enable one of the lines below (remove leading //)
 //#define BOARD_TYPE 0 // 0 = Flytron OpenLRS M1 Tx Board (not verified)
 //#define BOARD_TYPE 1 // 1 = Flytron OpenLRS M1 Rx Board as TX (not verified)
-//#define BOARD_TYPE 2 // 2 = Flytron OpenLRS M2/M3 Tx Board / OrangeRx UHF TX
+#define BOARD_TYPE 2 // 2 = Flytron OpenLRS M2/M3 Tx Board / OrangeRx UHF TX
 //#define BOARD_TYPE 3 // 3 = Flytron OpenLRS Rx v2 Board / OrangeRx UHF RX / HawkEye UHF RX (RX and TX supported)
 //#define BOARD_TYPE 4 // 4 = OpenLRSngTX / HawkEye UHF TX
 //#define BOARD_TYPE 5 // 5 = OpenLRSngRX-4/6ch (DTF UHF/HawkEye) (RX and TX supported)
@@ -73,9 +73,19 @@
 //#define SLAVE_STATISTICS // output master/slave stats on RX serial
 //#define DEBUG_DUMP_PPM // dump PPM data on serial (both TX/RX)
 
+
+//####### Transparant serial #######
+#define COM_BUF_MAXSIZE 32 // maximum downlink packet size. Max value is 64 , No use having higher than SERIAL_BUFSIZE, (also 1 byte per rf packet is dedicated for datalength and flags). Mavlink telemetry mode allows for serial downlink != 9
+
+//####### MAVLink #######
+#define MAVLINK_INJECT_INTERVAL 1000000
+
 //####################
 //### CODE SECTION ###
 //####################
+
+#include "serialport.h"
+#define DefineSerialPort(_name, _num) FastSerialPort(_name, _num)
 
 #include <Arduino.h>
 
@@ -95,6 +105,7 @@
 #include "chpicker.h"
 #include "TX.h"
 #else
+#include "mavlink.h"
 #include "I2C.h"
 #include "serialPPM.h"
 #include "RX.h"
