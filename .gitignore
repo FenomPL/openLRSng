@@ -14,7 +14,19 @@ Release/*
 libraries/*
 .settings/*
 out
+<<<<<<< HEAD
 Release/
 .cproject
 .project
 openLRSng.cpp
+=======
+gvim
+ipch/
+openLRSng.opensdf
+openLRSng.sdf
+openLRSng.sln
+openLRSng.suo
+openLRSng.vcxproj
+openLRSng.vcxproj.filters
+openLRSng.vcxproj.user
+>>>>>>> 3fe86c1b627bbcb341497abe72495b600a9929e1
